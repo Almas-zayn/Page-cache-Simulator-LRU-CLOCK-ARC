@@ -1,150 +1,149 @@
-Page-cache-Simulator-LRU-CLOCK-ARC
 
-A small command-line simulator that demonstrates and compares three page-replacement / cache policies:
 
-LRU (Least Recently Used)
+# 🧠 Page Cache Simulator — LRU | CLOCK | ARC
 
-CLOCK (Second-Chance / Clock)
+A **C-based page replacement simulator** that compares the behavior of three popular cache/page replacement algorithms:
+- **LRU (Least Recently Used)**
+- **CLOCK (Second-Chance)**
+- **ARC (Adaptive Replacement Cache)**
 
-ARC (Adaptive Replacement Cache)
+It prints **step-by-step colored output** and **comparison tables** for each access order (random, sequential, looping).
 
-This repository contains simple implementations of each algorithm and a driver that runs the same input access sequences (three access orders) on each policy and prints per-step state plus comparison tables.
+---
 
-Repo layout
+## 📂 Repository Structure
 .
-├─ page_caches.h             # shared constants, colors, PageCacheStats struct, etc.
-├─ simulate_lru.c            # LRU implementation + pretty print per access
-├─ simulate_clock.c          # Clock implementation + pretty print per access
-├─ simulate_arc.c            # ARC implementation + pretty print per access
-└─ page_caches_simulator.c   # driver: defines example inputs and runs all simulations
+├── page_caches.h # Common definitions, structs, color codes
+├── simulate_lru.c # LRU implementation
+├── simulate_clock.c # CLOCK (Second-Chance) implementation
+├── simulate_arc.c # ARC implementation
+└── page_caches_simulator.c # Main driver - runs all algorithms & compares
 
 
-Note: page_caches.h defines MAX_FRAMES and MAX_PAGES used by the simulators (the code uses 3 frames and 12 pages in the examples). The simulators print colored output (ANSI escape sequences) for readability.
+---
 
-Build
+## ⚙️ Compilation
 
-Compile the simulator with gcc:
+Compile all source files together:
 
+```bash
 gcc page_caches_simulator.c simulate_lru.c simulate_clock.c simulate_arc.c -o page_cache_simulator
 
-
-If your system complains about any missing headers or flags, compile like this (explicit C standard):
-
+or (for standard C11):
 gcc -std=c11 page_caches_simulator.c simulate_lru.c simulate_clock.c simulate_arc.c -o page_cache_simulator
+```
 
-Run
+▶️ Run
+
+Execute the compiled simulator:
+```bash
 ./page_cache_simulator
+```
+
+It will display:
+
+Step-by-step frame states for each algorithm
+
+Hits, Misses, and Hit Ratios
+
+Colored comparison tables for each access pattern
+## 📊 Input Access Sequences (from `page_caches_simulator.c`)
+
+The simulator tests **three access patterns** with cache capacity = **3 frames** (`MAX_FRAMES = 3`):
+
+| 🔹 **Access Type** | 🧱 **Array Name** | 📄 **Sequence** |
+|--------------------|------------------|-----------------|
+| 🔸 Random | `pages1` | `{1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5}` |
+| 🔹 Sequential | `pages2` | `{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}` |
+| 🔁 Looping | `pages3` | `{1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3}` |
+
+---
+
+## 📈 Results Summary
+
+The following tables show the **Hit**, **Miss**, and **Hit Ratio** values computed by the simulator (based on its exact logic):
+
+### 🔸 Random Order (`pages1`)
+
+| 🧩 **Algorithm** | ✅ **Hits** | ❌ **Misses** | 📊 **Hit Ratio** |
+|------------------|-------------|---------------|------------------|
+| 🟠 **LRU** | 2 | 10 | 16.67% |
+| 🔵 **CLOCK** | 3 | 9 | 25.00% |
+| 🟢 **ARC** | 4 | 8 | 33.33% |
+
+---
+
+### 🔹 Sequential Order (`pages2`)
+
+| 🧩 **Algorithm** | ✅ **Hits** | ❌ **Misses** | 📊 **Hit Ratio** |
+|------------------|-------------|---------------|------------------|
+| 🟠 **LRU** | 0 | 12 | 0.00% |
+| 🔵 **CLOCK** | 0 | 12 | 0.00% |
+| 🟢 **ARC** | 0 | 12 | 0.00% |
+
+---
+
+### 🔁 Looping Order (`pages3`)
+
+| 🧩 **Algorithm** | ✅ **Hits** | ❌ **Misses** | 📊 **Hit Ratio** |
+|------------------|-------------|---------------|------------------|
+| 🟠 **LRU** | 9 | 3 | 75.00% |
+| 🔵 **CLOCK** | 9 | 3 | 75.00% |
+| 🟢 **ARC** | 9 | 3 | 75.00% |
+
+---
+
+## 🧩 Algorithm Overview
+
+| 🔹 **Algorithm** | ⚙️ **Description** |
+|------------------|--------------------|
+| 🟠 **LRU (Least Recently Used)** | Evicts the page that was least recently accessed. Maintains a timestamp for each page access. Works well for workloads with strong temporal locality. |
+| 🔵 **CLOCK (Second-Chance Algorithm)** | Uses a circular buffer and reference bit per frame. The clock hand gives a “second chance” to pages with ref-bit = 1 before eviction. Efficient approximation of LRU. |
+| 🟢 **ARC (Adaptive Replacement Cache)** | Balances between recency (T1) and frequency (T2) using adaptive parameter `p`. Maintains ghost lists (B1, B2) to learn from past evictions and adapt dynamically. |
+
+---
+
+## 🧮 Color Codes (used in terminal output)
+
+| 🎨 **Color** | 💻 **ANSI Code** | 🧠 **Meaning** |
+|--------------|------------------|----------------|
+| 🟢 **Green** | `\033[0;32m` | Cache **Hit** |
+| 🔴 **Red** | `\033[0;31m` | Cache **Miss** |
+| 🟠 **Orange** | `\033[0;33m` | Labels / Highlights |
+| ⚪ **Reset** | `\033[0m` | Reset terminal color |
+
+---
 
 
-This runs all three policies on the three example input orders embedded in page_caches_simulator.c and prints:
+🧪 Modify / Extend
 
-A per-access table for each policy (requested page, hit/miss, and frame / internal state snapshot).
+You can easily extend the simulator:
 
-A summary line (Hits, Misses, Hit Ratio).
+Add new access patterns to page_caches_simulator.c
 
-A final comparison table (for each access order) showing Hits, Misses, and Hit Ratio (%) for each policy (LRU, CLOCK, ARC).
+Change frame count (MAX_FRAMES in page_caches.h)
 
-Inputs used by the driver (exact arrays from page_caches_simulator.c)
+Add new algorithms or modify policies
 
-The driver defines three example sequences (each has MAX_PAGES = 12 elements):
+🚀 Future Enhancements
 
-Random order (pages1)
+Add command-line arguments for custom input arrays or frame count
 
-int pages1[] = {1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5};
+Support CSV export of results for plotting
 
+Implement graphical visualization of cache states
 
-Sequential order (pages2)
+Benchmark ARC parameter tuning (p) dynamically
 
-int pages2[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+📜 License
 
+This project is open for educational and research use.
+Feel free to fork and improve it!
 
-Looping order (pages3)
+👨‍💻 Author
 
-int pages3[] = {1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3};
+Almas-zayn
 
-
-Assumption used by the code (as visible in the implementations):
-
-Number of frames (cache capacity): 3 (the implementations reference MAX_FRAMES or CAPACITY = 3)
-
-Results (computed from the exact simulator logic used in the repo)
-
-I ran the same algorithms and input sequences (following the exact logic from the C code) to produce the numeric summaries shown below. These are the same numbers the simulator will print when you run it.
-
-pages1 (random)
-
-LRU: Hits = 2, Misses = 10, Hit Ratio = 16.67%
-
-CLOCK: Hits = 3, Misses = 9, Hit Ratio = 25.00%
-
-ARC: Hits = 4, Misses = 8, Hit Ratio = 33.33%
-
-pages2 (sequential 1..12)
-
-LRU: Hits = 0, Misses = 12, Hit Ratio = 0.00%
-
-CLOCK: Hits = 0, Misses = 12, Hit Ratio = 0.00%
-
-ARC: Hits = 0, Misses = 12, Hit Ratio = 0.00%
-
-pages3 (loop 1,2,3 repeating)
-
-LRU: Hits = 9, Misses = 3, Hit Ratio = 75.00%
-
-CLOCK: Hits = 9, Misses = 3, Hit Ratio = 75.00%
-
-ARC: Hits = 9, Misses = 3, Hit Ratio = 75.00%
-
-Interpretation / Highlights
-
-For the random sequence pages1, ARC adapts and achieves the highest hit ratio among the three for this input with capacity 3.
-
-For strictly sequential accesses beyond capacity (pages2), none of the algorithms obtain hits (all misses), since pages never repeat within the window.
-
-For small repeating working sets that fit in 3 frames (pages3), all algorithms keep the hot set resident and reach a high hit ratio.
-
-How the per-policy implementations behave (short summary)
-
-LRU: Tracks last access time and evicts the page with the oldest timestamp. The LRU implementation assigns timestamps on each access and finds the smallest timestamp for eviction.
-
-CLOCK: Uses a reference bit array and a pointer (clock hand). On a miss, the pointer searches for the first frame with refBit == 0; while scanning, it clears refBits set to 1 (second-chance behavior).
-
-ARC: Maintains four lists (T1, T2, B1, B2) and an adaptive parameter p steering the split between recency (T1) and frequency (T2). The implementation in simulate_arc.c follows the canonical high-level ARC behavior (T1 and T2 are resident lists, B1 and B2 are ghost lists).
-
-Adding / editing input scenarios
-
-To modify the sample access sequences, edit page_caches_simulator.c:
-
-// Edit / add sequences here
-int pages1[] = { ... }; // random
-int pages2[] = { ... }; // sequential
-int pages3[] = { ... }; // looping
-
-// If you change number of accesses, ensure MAX_PAGES (in header) matches or adjust loops accordingly.
+📧 For suggestions or collaboration — feel free to reach out!
 
 
-To change cache capacity, modify MAX_FRAMES (or the CAPACITY constant inside simulate_arc.c / page_caches.h) consistently.
-
-Suggestions / next steps (ideas)
-
-Add command-line flags to choose:
-
-which algorithm(s) to run
-
-the cache capacity at runtime
-
-custom input sequences (from a file or CLI)
-
-Dump results to CSV for plotting and analysis.
-
-Add unit tests that assert hit/miss counts for known traces.
-
-Support variable frame counts and sweep the frame count to create hit-rate vs frames plots.
-
-License
-
-Add your preferred license if you want this to be public-friendly (e.g., MIT).
-
-Contact / Author
-
-Repo author: Almas-zayn (existing GitHub account for the repo).

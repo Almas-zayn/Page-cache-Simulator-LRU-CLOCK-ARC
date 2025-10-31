@@ -34,14 +34,24 @@ void simulate_lru(int pages[], struct PageCacheStats *stats)
     int hits = 0, misses = 0, counter = 0;
 
     printf("\n" COLOR_BOLD COLOR_CYAN);
-    printf("----------------------------------------------\n");
-    printf("%10s | %-8s | %-20s\n", "Requested", "Result", "Frame State");
-    printf("----------------------------------------------\n" COLOR_RESET);
+    printf("-------------------------------------------------------------\n");
+    printf("| %-16s |  %10s | %-8s | %-14s|\n", "Current Frame", "Requested", "Result", "Updated Frame");
+    printf("-------------------------------------------------------------\n" COLOR_RESET);
 
     for (int i = 0; i < MAX_PAGES; i++)
     {
         int page = pages[i];
         int index = findPage(page);
+
+        printf("|");
+        for (int j = 0; j < MAX_FRAMES; j++)
+        {
+            if (buffer_LRU[j].page != -1)
+                printf("%3d ", buffer_LRU[j].page);
+            else
+                printf("  - ");
+        }
+        printf("      | ");
 
         const char *color;
         const char *status;
@@ -79,7 +89,7 @@ void simulate_lru(int pages[], struct PageCacheStats *stats)
             }
         }
 
-        printf("  %s%-8d%s | %s%-8s%s | ", color, page, COLOR_RESET, color, status, COLOR_RESET);
+        printf("     %s%-5d%s  | %s%-8s%s | ", color, page, COLOR_RESET, color, status, COLOR_RESET);
 
         for (int k = 0; k < MAX_FRAMES; k++)
         {
@@ -88,14 +98,14 @@ void simulate_lru(int pages[], struct PageCacheStats *stats)
             else
                 printf("-  ");
         }
-        printf("\n");
+        printf("     |\n");
     }
 
     printf(COLOR_CYAN);
-    printf("----------------------------------------------\n");
-    printf(COLOR_YELLOW "Hits = %d   Misses = %d   Hit Ratio = %.2f\n" COLOR_RESET,
+    printf("-------------------------------------------------------------\n");
+    printf(COLOR_YELLOW "    Hits = %d   Misses = %d   Hit Ratio = %.2f\n" COLOR_RESET,
            hits, misses, (float)hits / (hits + misses));
-    printf(COLOR_CYAN "----------------------------------------------\n\n" COLOR_RESET);
+    printf(COLOR_CYAN "-------------------------------------------------------------\n\n" COLOR_RESET);
 
     stats->hits = hits;
     stats->misses = misses;
